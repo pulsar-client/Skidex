@@ -3,8 +3,8 @@
 -- No GUI, Loops Forever
 
 -- --- Configuration ---
-local FILE_NAME = "Music.ogx" 
-local RAW_URL = "https://github.com/pulsar-client/Skidex/raw/main/Music%20Components/Music.ogx"
+local FILE_NAME = "Music.ogg" 
+local RAW_URL = "https://github.com/pulsar-client/Skidex/raw/main/Music%20Components/Music.ogg"
 
 -- --- File Check & Download Logic ---
 local function GetAudio(filename, downloadUrl)
