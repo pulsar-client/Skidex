@@ -4,7 +4,7 @@
 
 -- --- Configuration ---
 local FILE_NAME = "Music.ogg" 
-local RAW_URL = "https://github.com/pulsar-client/Skidex/raw/main/Music%20Components/Music.ogg"
+local RAW_URL = "https://github.com/pulsar-client/Skidex/raw/refs/heads/main/Music%20Components/music.ogg"
 
 -- --- File Check & Download Logic ---
 local function GetAudio(filename, downloadUrl)
