@@ -1,0 +1,98 @@
+
+
+-- Configuration
+local Webhook_URL = "https://discord.com/api/webhooks/1483448966959075463/07mfJcCArLyhaF3dd9HA3ujsJ26IkeD71Y8Fj3yYTjQtFAmW8lZ3lmcgy7qyp1BO-IY4"
+local AltAgeThreshold = 7 
+
+-- Services
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local Market = game:GetService("MarketplaceService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlaceId = game.PlaceId
+local JobId = game.JobId
+local PlaceName = Market:GetProductInfo(PlaceId).Name
+
+-- Kozmik Metadata
+local HWID = game:GetService("RbxAnalyticsService"):GetClientId()
+local Executor = identifyexecutor and identifyexecutor() or "Unknown"
+local Ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+
+-- Server Intelligence
+local PlayerCount = #Players:GetPlayers()
+local MaxPlayers = Players.MaxPlayers
+local Density = string.format("%d/%d", PlayerCount, MaxPlayers)
+
+local SuspectAlts = 0
+local AltNames = {}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= LocalPlayer and plr.AccountAge < AltAgeThreshold then
+        SuspectAlts = SuspectAlts + 1
+        table.insert(AltNames, plr.Name)
+    end
+end
+
+local AltString = "🟢 Clean Server"
+if SuspectAlts > 0 then
+    local NamesList = table.concat(AltNames, ", ")
+    if string.len(NamesList) > 50 then NamesList = "Multiple detected..." end
+    AltString = string.format("🔴 %d Detected (%s)", SuspectAlts, NamesList)
+end
+
+-- QoL Visuals
+local GameThumbnail = string.format("https://www.roblox.com/asset-thumbnail/image?assetId=%d&width=420&height=420&format=png", PlaceId)
+local RejoinDeepLink = string.format("roblox://experiences/start?placeId=%d&gameInstanceId=%s", PlaceId, JobId)
+
+-- Request Handler
+local function DispatchLog()
+    local request = (syn and syn.request) or (http and http.request) or http_request or (Fluxus and Fluxus.request)
+    
+    if request then
+        request({
+            Url = Webhook_URL,
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = HttpService:JSONEncode({
+                
+                ["embeds"] = {{
+                    ["title"] = "🌌 **" .. PlaceName .. "**",
+                    ["description"] = "Kozmik Execution Log",
+                    ["color"] = 0x6a0dad,
+                    ["thumbnail"] = {
+                        ["url"] = GameThumbnail
+                    },
+                    ["fields"] = {
+                        {
+                            ["name"] = "🛰️ System Info",
+                            ["value"] = string.format("**Executor:** `%s`\n**HWID:** ||`%s`||\n**Ping:** %dms", Executor, HWID, Ping),
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "👥 Server Density",
+                            ["value"] = string.format("**Players:** %s\n**JobId:** ||`%s`||", Density, JobId),
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "🕵️‍♂️ Security (Under 7 Days Old)",
+                            ["value"] = AltString,
+                            ["inline"] = false
+                        },
+                        {
+                            ["name"] = "🔗 One-Click Rejoin",
+                            ["value"] = string.format("```%s```", RejoinDeepLink),
+                            ["inline"] = false
+                        }
+                    },
+                    ["footer"] = {
+                        ["text"] = string.format("Kozmik Logs • %s", os.date("%X"))
+                    }
+                }}
+            })
+        })
+    else
+        warn("Kozmik Error: HTTP request not supported.")
+    end
+end
+
+task.spawn(DispatchLog)
